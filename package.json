@@ -1,0 +1,13 @@
+{
+  "name": "bot-salacine",
+  "version": "1.0.0",
+  "description": "Backend para el bot de Sala Cine",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.61.0",
+    "firebase-admin": "^11.9.0"
+  }
+}
