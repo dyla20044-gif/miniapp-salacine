@@ -2,9 +2,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// --- Configuración de Firebase ---
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-const firebaseConfig = JSON.parse(__firebase_config);
+// --- Configuración de Firebase (ACTUALIZADO) ---
+const firebaseConfig = {
+    apiKey: "AIzaSyCF5lyEIFkKhzgc4kOMebWZ7oZrxWDNw2Y",
+    authDomain: "app-aeff2.firebaseapp.com",
+    projectId: "app-aeff2",
+    storageBucket: "app-aeff2.firebasestorage.app",
+    messagingSenderId: "12229598213",
+    appId: "1:12229598213:web:80555d9d22c30b69ddd06c",
+    measurementId: "G-ZMQN0D6D4S"
+};
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
