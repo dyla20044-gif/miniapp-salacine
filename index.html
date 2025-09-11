@@ -17,7 +17,12 @@
     <main>
         <section class="hero-banner">
             <div id="banner-content">
+                <div id="banner-buttons">
+                    <button id="banner-watch-button" class="button">Ver ahora</button>
+                    <button id="banner-premium-button" class="button secondary">Activar Premium</button>
                 </div>
+            </div>
+            <div class="banner-indicators"></div>
         </section>
 
         <div id="search-results-section" style="display: none;">
@@ -31,7 +36,7 @@
             <section class="category-section">
                 <div class="category-header">
                     <h2>Populares</h2>
-                    <a href="#" class="see-more-btn">Ver más</a>
+                    <a href="#" class="see-more-btn" data-category="movie/popular">Ver más</a>
                 </div>
                 <div id="populares-movies" class="movie-list horizontal-scroll"></div>
             </section>
@@ -39,17 +44,33 @@
             <section class="category-section">
                 <div class="category-header">
                     <h2>Tendencias del Día</h2>
-                    <a href="#" class="see-more-btn">Ver más</a>
+                    <a href="#" class="see-more-btn" data-category="trending/all/day">Ver más</a>
                 </div>
                 <div id="tendencias-movies" class="movie-list horizontal-scroll"></div>
             </section>
         
             <section class="category-section">
                 <div class="category-header">
+                    <h2>Acción y Aventura</h2>
+                    <a href="#" class="see-more-btn" data-category="discover/movie?with_genres=28">Ver más</a>
+                </div>
+                <div id="accion-movies" class="movie-list horizontal-scroll"></div>
+            </section>
+
+            <section class="category-section">
+                <div class="category-header">
                     <h2>Series de TV</h2>
-                    <a href="#" class="see-more-btn">Ver más</a>
+                    <a href="#" class="see-more-btn" data-category="tv/popular">Ver más</a>
                 </div>
                 <div id="series-movies" class="movie-list horizontal-scroll"></div>
+            </section>
+
+             <section class="category-section">
+                <div class="category-header">
+                    <h2>Terror y Misterio</h2>
+                    <a href="#" class="see-more-btn" data-category="discover/movie?with_genres=27,9648">Ver más</a>
+                </div>
+                <div id="terror-movies" class="movie-list horizontal-scroll"></div>
             </section>
         </div>
     </main>
@@ -70,15 +91,21 @@
     </nav>
     
     <div id="movie-modal" class="modal">
-        <div class="modal-content">
+        <div id="modal-backdrop"></div>
+        <div class="modal-content movie-detail">
             <span class="close-button">&times;</span>
-            <img id="modal-poster" src="" alt="Portada de la película">
-            <h2 id="modal-title"></h2>
-            <p id="modal-description"></p>
-            <div class="modal-buttons">
-                <button id="request-button" class="button request-button" style="display: none;">Pedir esta película</button>
-                <button id="watch-button" class="button">Ver ahora</button>
-                <a id="trailer-button" href="#" target="_blank" class="button secondary">Ver tráiler</a>
+            <div class="modal-info">
+                <img id="modal-poster" src="" alt="Portada de la película">
+                <div class="modal-text">
+                    <h2 id="modal-title"></h2>
+                    <p id="modal-description"></p>
+                    <div id="read-more" style="display: none;">... Leer más</div>
+                    <div class="modal-buttons">
+                        <button id="request-button" class="button request-button" style="display: none;">Pedir esta película</button>
+                        <button id="watch-button" class="button">Ver ahora</button>
+                        <a id="trailer-button" href="#" target="_blank" class="button secondary">Ver tráiler</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -96,6 +123,14 @@
             <h2>Contenido Premium</h2>
             <p>Esta película es solo para usuarios VIP. ¡Actualiza para verla!</p>
             <button class="button">Actualizar a Premium</button>
+        </div>
+    </div>
+
+    <div id="see-more-modal" class="modal">
+        <div class="modal-content full-grid">
+            <span class="close-button">&times;</span>
+            <h2 id="see-more-title"></h2>
+            <div id="see-more-grid" class="movie-grid"></div>
         </div>
     </div>
     
