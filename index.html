@@ -9,27 +9,17 @@
 </head>
 <body>
 
-    <!-- Barra de Navegación Superior -->
     <header class="top-nav">
         <div class="logo">🍿 Sala Cine</div>
-        <div class="nav-links">
-            <a href="#" class="nav-link active">Recomendado</a>
-            <a href="#" class="nav-link">Filmes</a>
-            <a href="#" class="nav-link">Series de TV</a>
-            <a href="#" class="nav-link">Info</a>
-        </div>
         <i id="search-icon" class="fas fa-search search-icon-top"></i>
     </header>
 
     <main>
-        <!-- Sección del Banner Principal -->
         <section class="hero-banner">
             <div id="banner-content">
-                <!-- El título y la imagen del banner se cargarán con JavaScript -->
-            </div>
+                </div>
         </section>
 
-        <!-- Contenedor para los resultados de búsqueda (invisible por defecto) -->
         <div id="search-results-section" style="display: none;">
             <div class="search-bar-container">
                 <input type="text" id="search-input" placeholder="Buscar películas...">
@@ -37,40 +27,33 @@
             <div id="search-results-list" class="movie-grid"></div>
         </div>
 
-        <!-- Catálogo de películas -->
         <div id="movie-catalog">
             <section class="category-section">
                 <div class="category-header">
-                    <h2>Clásico de tiroteos</h2>
-                    <a href="#" class="see-more-btn">Ver más</a>
-                </div>
-                <div id="tiroteos-movies" class="movie-list horizontal-scroll"></div>
-            </section>
-        
-            <section class="category-section">
-                <div class="category-header">
-                    <h2>Películas Populares</h2>
+                    <h2>Populares</h2>
                     <a href="#" class="see-more-btn">Ver más</a>
                 </div>
                 <div id="populares-movies" class="movie-list horizontal-scroll"></div>
             </section>
-
-            <!-- Aquí se puede insertar un banner de publicidad -->
-            <div class="ad-banner">
-                <img src="https://i.imgur.com/vH0rV34.jpeg" alt="Disfruta los mejores estrenos y contenido TOP">
-            </div>
-
+        
             <section class="category-section">
                 <div class="category-header">
-                    <h2>De Terror</h2>
+                    <h2>Tendencias del Día</h2>
                     <a href="#" class="see-more-btn">Ver más</a>
                 </div>
-                <div id="terror-movies" class="movie-list horizontal-scroll"></div>
+                <div id="tendencias-movies" class="movie-list horizontal-scroll"></div>
+            </section>
+        
+            <section class="category-section">
+                <div class="category-header">
+                    <h2>Series de TV</h2>
+                    <a href="#" class="see-more-btn">Ver más</a>
+                </div>
+                <div id="series-movies" class="movie-list horizontal-scroll"></div>
             </section>
         </div>
     </main>
-
-    <!-- Barra de Navegación Inferior -->
+    
     <nav class="bottom-nav">
         <a href="#" class="nav-item active">
             <i class="fas fa-home"></i>
@@ -86,7 +69,6 @@
         </a>
     </nav>
     
-    <!-- Modal para detalles de la película -->
     <div id="movie-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -94,13 +76,13 @@
             <h2 id="modal-title"></h2>
             <p id="modal-description"></p>
             <div class="modal-buttons">
-                <a id="watch-button" href="#" target="_blank" class="button">Ver ahora</a>
-                <a id="trailer-button" href="#" target="_blank" class="button">Ver tráiler</a>
+                <button id="request-button" class="button request-button" style="display: none;">Pedir esta película</button>
+                <button id="watch-button" class="button">Ver ahora</button>
+                <a id="trailer-button" href="#" target="_blank" class="button secondary">Ver tráiler</a>
             </div>
         </div>
     </div>
 
-    <!-- Modal para reproductor de video -->
     <div id="video-modal" class="modal">
         <div class="modal-content video-content">
             <span class="close-button">&times;</span>
@@ -108,7 +90,6 @@
         </div>
     </div>
 
-    <!-- Modal para mensaje de premium -->
     <div id="premium-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -117,7 +98,7 @@
             <button class="button">Actualizar a Premium</button>
         </div>
     </div>
-
+    
     <script type="module" src="script.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </body>
