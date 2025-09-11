@@ -23,10 +23,6 @@
                 <div id="banner-list" class="movie-list horizontal-scroll"></div>
             </section>
 
-            <section class="genres-section">
-                <button id="genres-button" class="button genres-button">Géneros <i class="fas fa-chevron-down"></i></button>
-            </section>
-
             <div id="carousels-container">
                 <section class="category-section">
                     <div class="category-header">
@@ -65,7 +61,7 @@
         <div id="movies-screen" class="screen">
             <div class="screen-header">
                 <h2>Películas</h2>
-                <button id="genres-button-2" class="button genres-button">Géneros <i class="fas fa-chevron-down"></i></button>
+                <button id="genres-button" class="button genres-button">Géneros <i class="fas fa-chevron-down"></i></button>
             </div>
             <div id="all-movies-grid" class="movie-grid"></div>
         </div>
@@ -88,6 +84,40 @@
                 <button class="button secondary">Configuración</button>
             </div>
         </div>
+
+        <div id="details-screen" class="screen">
+            <div id="details-poster-top">
+                <div class="poster-overlay">
+                    <button id="details-play-button" class="play-button"><i class="fas fa-play"></i></button>
+                </div>
+            </div>
+            <div class="details-info-section">
+                <div class="movie-header">
+                    <h2 id="details-title"></h2>
+                    <div class="movie-actions">
+                        <i id="share-button" class="fas fa-share-alt"></i>
+                        <i id="favorite-button" class="fas fa-heart"></i>
+                    </div>
+                </div>
+                <div class="movie-metadata">
+                    <span id="details-year"></span>
+                    <span id="details-genres"></span>
+                </div>
+                <p id="details-sinopsis"></p>
+                <button id="read-more-button" class="text-button">Ver más</button>
+                <div id="movie-cast-info" class="movie-cast">
+                    <p>Director: <span id="director-name"></span></p>
+                    <p>Actores: <span id="actors-list"></span></p>
+                </div>
+                <div class="ad-banner">
+                    <img src="https://i.imgur.com/qL07uP2.jpeg" alt="Publicidad">
+                </div>
+                <section class="related-section">
+                    <h3>También podría gustarte</h3>
+                    <div id="related-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+            </div>
+        </div>
     </main>
 
     <nav class="bottom-nav">
@@ -108,57 +138,11 @@
             <span>Perfil</span>
         </a>
     </nav>
-    
-    <div id="movie-modal" class="modal">
-        <div id="modal-backdrop"></div>
-        <div class="modal-content movie-detail">
-            <span class="close-button">&times;</span>
-            <div class="modal-info">
-                <div class="modal-info-header">
-                    <img id="modal-poster" src="" alt="Portada de la película">
-                    <div class="modal-text">
-                        <h2 id="modal-title"></h2>
-                        <p id="modal-sinopsis"></p>
-                    </div>
-                </div>
-                <div class="modal-buttons">
-                    <button id="request-button" class="button request-button" style="display: none;">Pedir esta película</button>
-                    <button id="watch-button" class="button">Ver ahora</button>
-                    <a id="trailer-button" href="#" target="_blank" class="button secondary">Ver tráiler</a>
-                </div>
-                <div class="social-buttons">
-                    <button id="favorite-button"><i class="fas fa-heart"></i> Añadir a Favoritos</button>
-                    <button id="share-button"><i class="fas fa-share-alt"></i> Compartir</button>
-                </div>
-            </div>
-            <section class="related-section">
-                <h3>Relacionadas</h3>
-                <div id="related-movies" class="movie-list horizontal-scroll"></div>
-            </section>
-        </div>
-    </div>
 
     <div id="video-modal" class="modal">
         <div class="modal-content video-content">
             <span class="close-button">&times;</span>
             <video id="video-player" controls></video>
-        </div>
-    </div>
-
-    <div id="premium-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Contenido Premium</h2>
-            <p>Esta película es solo para usuarios VIP. ¡Actualiza para verla!</p>
-            <button class="button">Actualizar a Premium</button>
-        </div>
-    </div>
-
-    <div id="genres-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Géneros</h2>
-            <div id="genres-list" class="movie-grid"></div>
         </div>
     </div>
     
