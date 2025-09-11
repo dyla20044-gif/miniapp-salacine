@@ -35,10 +35,20 @@ const trailerButton = document.getElementById('trailer-button');
 const seeMoreModal = document.getElementById('see-more-modal');
 const seeMoreTitle = document.getElementById('see-more-title');
 const seeMoreGrid = document.getElementById('see-more-grid');
+const allMoviesGrid = document.getElementById('all-movies-grid');
+const allMoviesScreen = document.getElementById('movies-screen');
+const homeScreen = document.getElementById('home-screen');
+const profileScreen = document.getElementById('profile-screen');
+const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+const genresButton = document.getElementById('genres-button');
+const genresModal = document.getElementById('genres-modal');
+const genresList = document.getElementById('genres-list');
+const modalBackdrop = document.getElementById('modal-backdrop');
 
 let moviesData = [];
 let bannerMovies = [];
 let currentBannerIndex = 0;
+let allGenres = {};
 
 // --- Funciones para manejar Modales ---
 function closeModal(modal) {
@@ -90,25 +100,14 @@ function showMovieDetails(movie) {
     const backdropUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : (movie.poster_path ? `https://image.tmdb.org/t/p/original${movie.poster_path}` : null);
     
     if (backdropUrl) {
-        document.getElementById('modal-backdrop').style.backgroundImage = `url('${backdropUrl}')`;
+        modalBackdrop.style.backgroundImage = `url('${backdropUrl}')`;
     }
 
     document.getElementById('modal-poster').src = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://placehold.co/500x750?text=No+Poster';
     document.getElementById('modal-poster').alt = movie.title || movie.name;
     document.getElementById('modal-title').textContent = movie.title || movie.name;
+    document.getElementById('modal-sinopsis').textContent = movie.overview || 'Sin sinopsis disponible.';
     
-    const descriptionElement = document.getElementById('modal-description');
-    const readMoreElement = document.getElementById('read-more');
-    const fullDescription = movie.description || movie.overview || 'Sin sinopsis disponible.';
-    const shortDescription = fullDescription.length > 150 ? fullDescription.substring(0, 150) + '...' : fullDescription;
-    
-    descriptionElement.textContent = shortDescription;
-    readMoreElement.style.display = fullDescription.length > 150 ? 'block' : 'none';
-    readMoreElement.onclick = () => {
-        descriptionElement.textContent = fullDescription;
-        readMoreElement.style.display = 'none';
-    };
-
     const localMovie = moviesData.find(m => m.tmdbId === movie.id);
 
     if (localMovie && localMovie.videoLink) {
@@ -157,14 +156,20 @@ async function fetchFromTMDB(endpoint, query = '') {
     return data.results || data.items || [];
 }
 
+async function fetchGenres() {
+    const genres = await fetchFromTMDB('genre/movie/list');
+    genres.forEach(genre => {
+        allGenres[genre.id] = genre.name;
+    });
+    renderGenres();
+}
+
 async function fetchHomeMovies() {
     const popularMovies = await fetchFromTMDB('movie/popular');
     renderCarousel('populares-movies', popularMovies);
 
     const trendingMovies = await fetchFromTMDB('trending/all/day');
     renderCarousel('tendencias-movies', trendingMovies);
-    bannerMovies = trendingMovies.filter(m => m.backdrop_path);
-    startBannerCarousel();
 
     const actionMovies = await fetchFromTMDB('discover/movie?with_genres=28');
     renderCarousel('accion-movies', actionMovies);
@@ -174,6 +179,9 @@ async function fetchHomeMovies() {
     
     const terrorMovies = await fetchFromTMDB('discover/movie?with_genres=27,9648');
     renderCarousel('terror-movies', terrorMovies);
+
+    bannerMovies = trendingMovies.filter(m => m.backdrop_path);
+    startBannerCarousel();
 
     document.querySelectorAll('.see-more-btn').forEach(button => {
         button.addEventListener('click', async (e) => {
@@ -221,21 +229,37 @@ function startBannerCarousel() {
     }, 5000);
 }
 
+function renderGenres() {
+    genresList.innerHTML = '';
+    for (const id in allGenres) {
+        const genreButton = document.createElement('button');
+        genreButton.className = 'button secondary';
+        genreButton.textContent = allGenres[id];
+        genreButton.onclick = async () => {
+            const movies = await fetchFromTMDB(`discover/movie?with_genres=${id}`);
+            seeMoreTitle.textContent = allGenres[id];
+            seeMoreGrid.innerHTML = '';
+            movies.forEach(movie => seeMoreGrid.appendChild(createMovieCard(movie)));
+            closeModal(genresModal);
+            showModal(seeMoreModal);
+        };
+        genresList.appendChild(genreButton);
+    }
+}
+
 // --- Search Logic ---
 searchIconTop.addEventListener('click', () => {
-    movieCatalog.style.display = 'none';
-    searchResultsSection.style.display = 'block';
-    searchInput.value = '';
     searchInput.focus();
 });
 
 searchInput.addEventListener('input', async (e) => {
     const query = e.target.value;
-    searchResultsList.innerHTML = '';
-
     if (query.length > 2) {
+        movieCatalog.style.display = 'none';
+        searchResultsSection.style.display = 'block';
         const searchResults = await fetchFromTMDB('search/multi', query);
         if (searchResults.length > 0) {
+            searchResultsList.innerHTML = '';
             searchResults.forEach(movie => {
                 if (movie.media_type !== 'person' && movie.poster_path) {
                     searchResultsList.appendChild(createMovieCard(movie));
@@ -244,7 +268,27 @@ searchInput.addEventListener('input', async (e) => {
         } else {
             searchResultsList.innerHTML = '<p style="text-align: center; color: #999; margin-top: 20px;">No se encontraron resultados.</p>';
         }
+    } else {
+        movieCatalog.style.display = 'block';
+        searchResultsSection.style.display = 'none';
     }
+});
+
+// --- Navegación ---
+navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+        
+        const targetScreenId = e.currentTarget.getAttribute('data-screen');
+        document.getElementById(targetScreenId).classList.add('active');
+        e.currentTarget.classList.add('active');
+    });
+});
+
+genresButton.addEventListener('click', () => {
+    showModal(genresModal);
 });
 
 // --- Bot Communication (Telegram) ---
@@ -274,4 +318,5 @@ onAuthStateChanged(auth, async (user) => {
         }));
     });
     fetchHomeMovies();
+    fetchGenres();
 });
