@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// --- Configuración de Firebase (ACTUALIZADO) ---
+// --- Configuración de Firebase ---
 const firebaseConfig = {
     apiKey: "AIzaSyCF5lyEIFkKhzgc4kOMebWZ7oZrxWDNw2Y",
     authDomain: "app-aeff2.firebaseapp.com",
@@ -32,8 +32,13 @@ const closeButtons = document.querySelectorAll('.close-button');
 const requestButton = document.getElementById('request-button');
 const watchButton = document.getElementById('watch-button');
 const trailerButton = document.getElementById('trailer-button');
+const seeMoreModal = document.getElementById('see-more-modal');
+const seeMoreTitle = document.getElementById('see-more-title');
+const seeMoreGrid = document.getElementById('see-more-grid');
 
 let moviesData = [];
+let bannerMovies = [];
+let currentBannerIndex = 0;
 
 // --- Funciones para manejar Modales ---
 function closeModal(modal) {
@@ -82,11 +87,28 @@ function renderCarousel(containerId, movies) {
 }
 
 function showMovieDetails(movie) {
-    document.getElementById('modal-poster').src = movie.poster ? movie.poster : (movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://placehold.co/500x750?text=No+Poster');
+    const backdropUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : (movie.poster_path ? `https://image.tmdb.org/t/p/original${movie.poster_path}` : null);
+    
+    if (backdropUrl) {
+        document.getElementById('modal-backdrop').style.backgroundImage = `url('${backdropUrl}')`;
+    }
+
+    document.getElementById('modal-poster').src = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://placehold.co/500x750?text=No+Poster';
     document.getElementById('modal-poster').alt = movie.title || movie.name;
     document.getElementById('modal-title').textContent = movie.title || movie.name;
-    document.getElementById('modal-description').textContent = movie.description || movie.overview;
     
+    const descriptionElement = document.getElementById('modal-description');
+    const readMoreElement = document.getElementById('read-more');
+    const fullDescription = movie.description || movie.overview || 'Sin sinopsis disponible.';
+    const shortDescription = fullDescription.length > 150 ? fullDescription.substring(0, 150) + '...' : fullDescription;
+    
+    descriptionElement.textContent = shortDescription;
+    readMoreElement.style.display = fullDescription.length > 150 ? 'block' : 'none';
+    readMoreElement.onclick = () => {
+        descriptionElement.textContent = fullDescription;
+        readMoreElement.style.display = 'none';
+    };
+
     const localMovie = moviesData.find(m => m.tmdbId === movie.id);
 
     if (localMovie && localMovie.videoLink) {
@@ -141,15 +163,62 @@ async function fetchHomeMovies() {
 
     const trendingMovies = await fetchFromTMDB('trending/all/day');
     renderCarousel('tendencias-movies', trendingMovies);
+    bannerMovies = trendingMovies.filter(m => m.backdrop_path);
+    startBannerCarousel();
+
+    const actionMovies = await fetchFromTMDB('discover/movie?with_genres=28');
+    renderCarousel('accion-movies', actionMovies);
 
     const tvSeries = await fetchFromTMDB('tv/popular');
     renderCarousel('series-movies', tvSeries);
     
-    const bannerMovie = trendingMovies[Math.floor(Math.random() * trendingMovies.length)];
-    const backdropUrl = bannerMovie.backdrop_path ? `https://image.tmdb.org/t/p/original${bannerMovie.backdrop_path}` : `https://placehold.co/1080x600?text=${bannerMovie.title || bannerMovie.name}`;
-    heroBanner.style.backgroundImage = `url('${backdropUrl}')`;
+    const terrorMovies = await fetchFromTMDB('discover/movie?with_genres=27,9648');
+    renderCarousel('terror-movies', terrorMovies);
+
+    document.querySelectorAll('.see-more-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const category = e.target.getAttribute('data-category');
+            const title = e.target.closest('.category-header').querySelector('h2').textContent;
+            
+            seeMoreTitle.textContent = title;
+            const movies = await fetchFromTMDB(category);
+            seeMoreGrid.innerHTML = '';
+            movies.forEach(movie => {
+                seeMoreGrid.appendChild(createMovieCard(movie));
+            });
+            showModal(seeMoreModal);
+        });
+    });
+}
+
+function startBannerCarousel() {
+    if (bannerMovies.length === 0) return;
     
-    heroBanner.onclick = () => showMovieDetails(bannerMovie);
+    const bannerIndicatorContainer = document.querySelector('.banner-indicators');
+    bannerMovies.forEach(() => {
+        const indicator = document.createElement('div');
+        indicator.className = 'banner-indicator';
+        bannerIndicatorContainer.appendChild(indicator);
+    });
+
+    const updateBanner = (index) => {
+        const movie = bannerMovies[index];
+        const backdropUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : 'https://placehold.co/1080x600?text=No+Banner';
+        heroBanner.style.backgroundImage = `url('${backdropUrl}')`;
+        heroBanner.onclick = () => showMovieDetails(movie);
+        
+        const indicators = document.querySelectorAll('.banner-indicator');
+        indicators.forEach(ind => ind.classList.remove('active'));
+        indicators[index].classList.add('active');
+    };
+
+    updateBanner(currentBannerIndex);
+    
+    setInterval(() => {
+        currentBannerIndex = (currentBannerIndex + 1) % bannerMovies.length;
+        updateBanner(currentBannerIndex);
+    }, 5000);
 }
 
 // --- Search Logic ---
