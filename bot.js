@@ -1,14 +1,14 @@
 const TelegramBot = require('node-telegram-bot-api');
 const firebaseAdmin = require('firebase-admin');
+const fetch = require('node-fetch');
 
-// 1. Usa las variables de entorno de Render
+// Configuración obtenida de las variables de entorno de Render
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const FIREBASE_ADMIN_CONFIG = JSON.parse(process.env.FIREBASE_ADMIN_CONFIG);
 
-const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
-
-// 2. Inicializa Firebase Admin con la variable de entorno
+// Inicializar bot y Firebase
+const bot = new TelegramBot(TELEGRAM_BOT_TOKEN);
 firebaseAdmin.initializeApp({
   credential: firebaseAdmin.credential.cert(FIREBASE_ADMIN_CONFIG),
 });
