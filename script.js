@@ -19,9 +19,12 @@ const auth = getAuth(app);
 
 // --- Elementos del DOM ---
 const homeScreen = document.getElementById('home-screen');
-const movieScreen = document.getElementById('movies-screen');
+const moviesScreen = document.getElementById('movies-screen');
 const seriesScreen = document.getElementById('series-screen');
 const profileScreen = document.getElementById('profile-screen');
+const detailsScreen = document.getElementById('details-screen');
+
+const navItems = document.querySelectorAll('.bottom-nav .nav-item');
 
 const searchInput = document.getElementById('search-input');
 const searchIconTop = document.getElementById('search-icon');
@@ -29,25 +32,40 @@ const movieCatalog = document.getElementById('carousels-container');
 const searchResultsSection = document.getElementById('search-results-section');
 const searchResultsList = document.getElementById('search-results-list');
 
-const movieModal = document.getElementById('movie-modal');
 const videoModal = document.getElementById('video-modal');
-const premiumModal = document.getElementById('premium-modal');
-const genresModal = document.getElementById('genres-modal');
-const seeMoreModal = document.getElementById('see-more-modal');
+const videoPlayer = document.getElementById('video-player');
 const closeButtons = document.querySelectorAll('.close-button');
 
-const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-const genresButton = document.getElementById('genres-button-2');
+const detailsPosterTop = document.getElementById('details-poster-top');
+const detailsPlayButton = document.getElementById('details-play-button');
+const detailsTitle = document.getElementById('details-title');
+const detailsYear = document.getElementById('details-year');
+const detailsGenres = document.getElementById('details-genres');
+const detailsSinopsis = document.getElementById('details-sinopsis');
+const readMoreButton = document.getElementById('read-more-button');
+const directorName = document.getElementById('director-name');
+const actorsList = document.getElementById('actors-list');
+const relatedMoviesContainer = document.getElementById('related-movies');
+
+const genresButton = document.getElementById('genres-button');
+const genresModal = document.getElementById('genres-modal');
 const genresList = document.getElementById('genres-list');
 const allMoviesGrid = document.getElementById('all-movies-grid');
 const allSeriesGrid = document.getElementById('all-series-grid');
 
+const bannerList = document.getElementById('banner-list');
+const bannerWatchBtn = document.getElementById('banner-watch-btn');
+const bannerPremiumBtn = document.getElementById('banner-premium-btn');
+const bannerMylistBtn = document.getElementById('banner-mylist-btn');
+
+
 let moviesData = [];
+let bannerMovies = [];
+let allGenres = {};
 
 // --- Funciones para manejar Modales ---
 function closeModal(modal) {
     modal.style.display = 'none';
-    const videoPlayer = document.getElementById('video-player');
     if (modal.id === 'video-modal') {
         videoPlayer.pause();
         videoPlayer.currentTime = 0;
@@ -79,8 +97,18 @@ function createMovieCard(movie) {
     movieCard.className = 'movie-card';
     const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://placehold.co/500x750?text=No+Poster';
     movieCard.innerHTML = `<img src="${posterUrl}" alt="${movie.title || movie.name}" class="movie-poster">`;
-    movieCard.addEventListener('click', () => showMovieDetails(movie));
+    movieCard.addEventListener('click', () => showDetailsScreen(movie));
     return movieCard;
+}
+
+function createBannerItem(movie) {
+    const bannerItem = document.createElement('div');
+    bannerItem.className = 'banner-item';
+    const backdropUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : 'https://placehold.co/1080x600?text=No+Banner';
+    bannerItem.style.backgroundImage = `url('${backdropUrl}')`;
+    
+    bannerItem.addEventListener('click', () => showDetailsScreen(movie));
+    return bannerItem;
 }
 
 function renderCarousel(containerId, movies) {
@@ -98,61 +126,41 @@ function renderGrid(container, movies) {
     });
 }
 
-function showMovieDetails(movie) {
-    const modalBackdrop = document.getElementById('modal-backdrop');
-    const modalPoster = document.getElementById('modal-poster');
-    const modalTitle = document.getElementById('modal-title');
-    const modalSinopsis = document.getElementById('modal-sinopsis');
-    const requestButton = document.getElementById('request-button');
-    const watchButton = document.getElementById('watch-button');
-    const trailerButton = document.getElementById('trailer-button');
-    const videoPlayer = document.getElementById('video-player');
+async function showDetailsScreen(movie) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    detailsScreen.classList.add('active');
 
-    const backdropUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : (movie.poster_path ? `https://image.tmdb.org/t/p/original${movie.poster_path}` : null);
+    const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/original${movie.poster_path}` : 'https://placehold.co/500x750?text=No+Poster';
+    detailsPosterTop.style.backgroundImage = `url('${posterUrl}')`;
+
+    detailsTitle.textContent = movie.title || movie.name;
+    detailsSinopsis.textContent = movie.overview || 'Sin sinopsis disponible.';
+    detailsYear.textContent = movie.release_date ? movie.release_date.substring(0, 4) : '';
+    detailsGenres.textContent = movie.genre_ids.map(id => allGenres[id]).join(', ');
     
-    if (backdropUrl) {
-        modalBackdrop.style.backgroundImage = `url('${backdropUrl}')`;
-    }
-
-    modalPoster.src = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://placehold.co/500x750?text=No+Poster';
-    modalPoster.alt = movie.title || movie.name;
-    modalTitle.textContent = movie.title || movie.name;
-    modalSinopsis.textContent = movie.overview || 'Sin sinopsis disponible.';
+    // Fetch credits for director and actors
+    const credits = await fetchFromTMDB(`movie/${movie.id}/credits`);
+    const director = credits.crew.find(c => c.job === 'Director');
+    directorName.textContent = director ? director.name : 'No disponible';
+    const actors = credits.cast.slice(0, 3).map(a => a.name).join(', ');
+    actorsList.textContent = actors || 'No disponible';
     
     const localMovie = moviesData.find(m => m.tmdbId === movie.id);
-
-    if (localMovie && localMovie.videoLink) {
-        watchButton.style.display = 'block';
-        requestButton.style.display = 'none';
-        watchButton.onclick = () => {
-            if (localMovie.isPremium) {
-                showModal(premiumModal);
-            } else {
-                videoPlayer.src = localMovie.videoLink;
-                showModal(videoModal);
-                videoPlayer.play();
-            }
-        };
-    } else {
-        watchButton.style.display = 'none';
-        requestButton.style.display = 'block';
-        requestButton.onclick = () => {
-            sendRequestToBot(movie);
-            alert('¡Petición enviada! Te avisaremos cuando la película esté disponible.');
-            closeModal(movieModal);
-        };
-    }
-
-    if (movie.trailerLink) {
-        trailerButton.href = movie.trailerLink;
-        trailerButton.style.display = 'block';
-    } else {
-        trailerButton.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(movie.title || movie.name)} trailer`;
-        trailerButton.style.display = 'block';
-    }
-
-    showModal(movieModal);
+    
+    detailsPlayButton.onclick = () => {
+        if (localMovie && localMovie.videoLink) {
+            videoPlayer.src = localMovie.videoLink;
+            showModal(videoModal);
+            videoPlayer.play();
+        } else {
+            alert('Esta película no tiene un enlace de video disponible.');
+        }
+    };
+    
+    const related = await fetchFromTMDB(`movie/${movie.id}/similar`);
+    renderCarousel('related-movies', related);
 }
+
 
 // --- TMDb & Firebase Data Fetching ---
 async function fetchFromTMDB(endpoint, query = '') {
@@ -164,28 +172,18 @@ async function fetchFromTMDB(endpoint, query = '') {
         return [];
     }
     const data = await response.json();
-    return data.results || data.items || [];
+    return data.results || data.items || data;
 }
 
-async function fetchHomeMovies() {
-    const bannerList = document.getElementById('banner-list');
-    const bannerMoviesData = await fetchFromTMDB('trending/all/day');
-    
-    bannerList.innerHTML = '';
-    bannerMoviesData.forEach(movie => {
-        const bannerItem = document.createElement('div');
-        bannerItem.className = 'banner-item';
-        const backdropUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : 'https://placehold.co/1080x600?text=No+Banner';
-        bannerItem.style.backgroundImage = `url('${backdropUrl}')`;
-        bannerItem.innerHTML = `
-            <div class="banner-content">
-                <h2>${movie.title || movie.name}</h2>
-            </div>
-        `;
-        bannerItem.addEventListener('click', () => showMovieDetails(movie));
-        bannerList.appendChild(bannerItem);
+async function fetchAllGenres() {
+    const genres = await fetchFromTMDB('genre/movie/list');
+    genres.forEach(genre => {
+        allGenres[genre.id] = genre.name;
     });
+    renderGenres();
+}
 
+async function fetchHomeContent() {
     const popularMovies = await fetchFromTMDB('movie/popular');
     renderCarousel('populares-movies', popularMovies);
 
@@ -197,59 +195,62 @@ async function fetchHomeMovies() {
 
     const terrorMovies = await fetchFromTMDB('discover/movie?with_genres=27,9648');
     renderCarousel('terror-movies', terrorMovies);
+    
+    bannerMovies = trendingMovies.filter(m => m.backdrop_path);
+    renderBannerCarousel();
 }
 
-function renderAllMovies() {
-    fetchFromTMDB('discover/movie?sort_by=popularity.desc').then(movies => {
-        renderGrid(allMoviesGrid, movies);
+function renderBannerCarousel() {
+    bannerList.innerHTML = '';
+    bannerMovies.forEach(movie => {
+        bannerList.appendChild(createBannerItem(movie));
     });
+    // Auto-scroll logic here
 }
 
-function renderAllSeries() {
-    fetchFromTMDB('discover/tv?sort_by=popularity.desc').then(series => {
-        renderGrid(allSeriesGrid, series);
-    });
-}
 
-async function fetchGenres() {
-    const genresData = await fetchFromTMDB('genre/movie/list');
-    const genresList = document.getElementById('genres-list');
+function renderGenres() {
     genresList.innerHTML = '';
-
-    genresData.forEach(genre => {
+    for (const id in allGenres) {
         const genreButton = document.createElement('button');
         genreButton.className = 'button secondary';
-        genreButton.textContent = genre.name;
-        genreButton.onclick = async () => {
-            const movies = await fetchFromTMDB(`discover/movie?with_genres=${genre.id}`);
-            renderGrid(allMoviesGrid, movies);
-            closeModal(genresModal);
+        genreButton.textContent = allGenres[id];
+        genreButton.onclick = () => {
+            fetchFromTMDB(`discover/movie?with_genres=${id}`).then(movies => {
+                renderGrid(allMoviesGrid, movies);
+                document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+                moviesScreen.classList.add('active');
+                closeModal(genresModal);
+            });
         };
         genresList.appendChild(genreButton);
-    });
+    }
 }
 
-
 // --- Search Logic ---
-searchIconTop.addEventListener('click', () => {
-    searchInput.focus();
-    handleSearch();
+document.getElementById('search-icon').addEventListener('click', () => {
+    const query = searchInput.value;
+    if (query.length > 2) {
+        handleSearch(query);
+    }
 });
 
 searchInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-        handleSearch();
+        handleSearch(searchInput.value);
     }
 });
 
 searchInput.addEventListener('input', (e) => {
     if (e.target.value.length > 2) {
-        handleSearch();
+        handleSearch(e.target.value);
+    } else {
+        homeScreen.classList.add('active');
+        searchResultsSection.classList.remove('active');
     }
 });
 
-async function handleSearch() {
-    const query = searchInput.value;
+async function handleSearch(query) {
     if (query.length > 2) {
         document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
         searchResultsSection.classList.add('active');
@@ -273,8 +274,6 @@ navItems.forEach(item => {
             renderAllMovies();
         } else if (targetScreenId === 'series-screen') {
             renderAllSeries();
-        } else if (targetScreenId === 'home-screen') {
-            fetchHomeMovies();
         }
     });
 });
@@ -283,18 +282,14 @@ genresButton.addEventListener('click', () => {
     showModal(genresModal);
 });
 
-// --- Bot Communication (Telegram) ---
-async function sendRequestToBot(movie) {
-    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-        Telegram.WebApp.sendData(JSON.stringify({ 
-            type: 'movie_request', 
-            movie: {
-                title: movie.title || movie.name,
-                tmdbId: movie.id,
-                posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null
-            }
-        }));
-    }
+async function renderAllMovies() {
+    const movies = await fetchFromTMDB('discover/movie?sort_by=popularity.desc');
+    renderGrid(allMoviesGrid, movies);
+}
+
+async function renderAllSeries() {
+    const series = await fetchFromTMDB('discover/tv?sort_by=popularity.desc');
+    renderGrid(allSeriesGrid, series);
 }
 
 // --- Initialization ---
@@ -309,6 +304,6 @@ onAuthStateChanged(auth, async (user) => {
             ...doc.data()
         }));
     });
-    fetchHomeMovies();
-    fetchGenres();
+    fetchHomeContent();
+    fetchAllGenres();
 });
