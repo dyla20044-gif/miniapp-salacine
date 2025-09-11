@@ -118,19 +118,32 @@ function showMovieDetails(movie) {
 
 // --- TMDb & Firebase Data Fetching ---
 async function fetchFromTMDB(endpoint, query = '') {
-    // ESTO ES SOLO PARA PRUEBAS LOCALES.
-    // DEBES VOLVER A LA VERSION ANTERIOR ANTES DE SUBIR A RENDER.
-    const url = query 
-        ? `https://api.themoviedb.org/3/${endpoint}?api_key=5eb8461b85d0d88c46d77cfe5436291f&language=es-ES&query=${encodeURIComponent(query)}` 
-        : `https://api.themoviedb.org/3/${endpoint}?api_key=5eb8461b85d0d88c46d77cfe5436291f&language=es-ES`;
+    const url = query ? `/api/tmdb?endpoint=${endpoint}&query=${encodeURIComponent(query)}` : `/api/tmdb?endpoint=${endpoint}`;
     
     const response = await fetch(url);
     if (!response.ok) {
-        console.error('Error fetching from TMDb:', response.status);
+        console.error('Error fetching from local server:', response.status);
         return [];
     }
     const data = await response.json();
     return data.results || data.items || [];
+}
+
+async function fetchHomeMovies() {
+    const popularMovies = await fetchFromTMDB('movie/popular');
+    renderCarousel('populares-movies', popularMovies);
+
+    const trendingMovies = await fetchFromTMDB('trending/all/day');
+    renderCarousel('tendencias-movies', trendingMovies);
+
+    const tvSeries = await fetchFromTMDB('tv/popular');
+    renderCarousel('series-movies', tvSeries);
+    
+    const bannerMovie = trendingMovies[Math.floor(Math.random() * trendingMovies.length)];
+    const backdropUrl = bannerMovie.backdrop_path ? `https://image.tmdb.org/t/p/original${bannerMovie.backdrop_path}` : `https://placehold.co/1080x600?text=${bannerMovie.title || bannerMovie.name}`;
+    heroBanner.style.backgroundImage = `url('${backdropUrl}')`;
+    
+    heroBanner.onclick = () => showMovieDetails(bannerMovie);
 }
 
 // --- Search Logic ---
