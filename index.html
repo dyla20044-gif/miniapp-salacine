@@ -9,107 +9,116 @@
 </head>
 <body>
 
+    <!-- Barra de Navegación Superior -->
     <header class="top-nav">
         <div class="logo">🍿 Sala Cine</div>
-        <i id="search-icon" class="fas fa-search search-icon-top"></i>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Buscar películas...">
+            <i id="search-icon" class="fas fa-search search-icon-top"></i>
+        </div>
     </header>
 
     <main>
-        <section class="hero-banner">
-            <div id="banner-content">
-                <div id="banner-buttons">
-                    <button id="banner-watch-button" class="button">Ver ahora</button>
-                    <button id="banner-premium-button" class="button secondary">Activar Premium</button>
-                </div>
-            </div>
-            <div class="banner-indicators"></div>
-        </section>
+        <!-- Contenido principal de la app -->
+        <div id="home-screen" class="screen active">
+            <!-- Carrusel de Banner -->
+            <section class="hero-banner-carousel">
+                <div id="banner-list" class="movie-list horizontal-scroll"></div>
+            </section>
 
-        <div id="search-results-section" style="display: none;">
-            <div class="search-bar-container">
-                <input type="text" id="search-input" placeholder="Buscar películas y series...">
+            <!-- Sección de Categorías -->
+            <section class="genres-section">
+                <button id="genres-button" class="button genres-button">Géneros <i class="fas fa-chevron-down"></i></button>
+            </section>
+
+            <!-- Carruseles de Películas -->
+            <div id="carousels-container">
+                <section class="category-section">
+                    <div class="category-header">
+                        <h2>Populares</h2>
+                        <a href="#" class="see-more-btn" data-category="movie/popular">Ver más</a>
+                    </div>
+                    <div id="populares-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+                
+                <section class="category-section">
+                    <div class="category-header">
+                        <h2>Tendencias</h2>
+                        <a href="#" class="see-more-btn" data-category="trending/all/day">Ver más</a>
+                    </div>
+                    <div id="tendencias-movies" class="movie-list horizontal-scroll"></div>
+                </section>
             </div>
-            <div id="search-results-list" class="movie-grid"></div>
         </div>
 
-        <div id="movie-catalog">
-            <section class="category-section">
-                <div class="category-header">
-                    <h2>Populares</h2>
-                    <a href="#" class="see-more-btn" data-category="movie/popular">Ver más</a>
-                </div>
-                <div id="populares-movies" class="movie-list horizontal-scroll"></div>
-            </section>
-        
-            <section class="category-section">
-                <div class="category-header">
-                    <h2>Tendencias del Día</h2>
-                    <a href="#" class="see-more-btn" data-category="trending/all/day">Ver más</a>
-                </div>
-                <div id="tendencias-movies" class="movie-list horizontal-scroll"></div>
-            </section>
-        
-            <section class="category-section">
-                <div class="category-header">
-                    <h2>Acción y Aventura</h2>
-                    <a href="#" class="see-more-btn" data-category="discover/movie?with_genres=28">Ver más</a>
-                </div>
-                <div id="accion-movies" class="movie-list horizontal-scroll"></div>
-            </section>
+        <!-- Pantalla de Películas (Cuadrícula) -->
+        <div id="movies-screen" class="screen">
+            <div class="screen-header">
+                <h2>Todas las Películas</h2>
+            </div>
+            <div id="all-movies-grid" class="movie-grid"></div>
+        </div>
 
-            <section class="category-section">
-                <div class="category-header">
-                    <h2>Series de TV</h2>
-                    <a href="#" class="see-more-btn" data-category="tv/popular">Ver más</a>
-                </div>
-                <div id="series-movies" class="movie-list horizontal-scroll"></div>
-            </section>
-
-             <section class="category-section">
-                <div class="category-header">
-                    <h2>Terror y Misterio</h2>
-                    <a href="#" class="see-more-btn" data-category="discover/movie?with_genres=27,9648">Ver más</a>
-                </div>
-                <div id="terror-movies" class="movie-list horizontal-scroll"></div>
-            </section>
+        <!-- Pantalla de Perfil -->
+        <div id="profile-screen" class="screen">
+            <div class="screen-header">
+                <h2>Mi Perfil</h2>
+            </div>
+            <div class="profile-options">
+                <button class="button">Activar Cuenta Pro</button>
+                <button class="button secondary">Iniciar Sesión</button>
+                <button class="button secondary">Mis Favoritos</button>
+                <button class="button secondary">Configuración</button>
+            </div>
         </div>
     </main>
-    
+
+    <!-- Barra de Navegación Inferior -->
     <nav class="bottom-nav">
-        <a href="#" class="nav-item active">
+        <a href="#" class="nav-item" data-screen="movies-screen">
+            <i class="fas fa-film"></i>
+            <span>Películas</span>
+        </a>
+        <a href="#" class="nav-item active" data-screen="home-screen">
             <i class="fas fa-home"></i>
             <span>Inicio</span>
         </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-tv"></i>
-            <span>Live TV</span>
-        </a>
-        <a href="#" class="nav-item">
+        <a href="#" class="nav-item" data-screen="profile-screen">
             <i class="fas fa-user"></i>
             <span>Perfil</span>
         </a>
     </nav>
     
+    <!-- Modal para detalles de la película -->
     <div id="movie-modal" class="modal">
         <div id="modal-backdrop"></div>
         <div class="modal-content movie-detail">
             <span class="close-button">&times;</span>
             <div class="modal-info">
-                <img id="modal-poster" src="" alt="Portada de la película">
-                <div class="modal-text">
-                    <h2 id="modal-title"></h2>
-                    <p id="modal-description"></p>
-                    <div id="read-more" style="display: none;">... Leer más</div>
-                    <div class="modal-buttons">
-                        <button id="request-button" class="button request-button" style="display: none;">Pedir esta película</button>
-                        <button id="watch-button" class="button">Ver ahora</button>
-                        <a id="trailer-button" href="#" target="_blank" class="button secondary">Ver tráiler</a>
+                <div class="modal-info-header">
+                    <img id="modal-poster" src="" alt="Portada de la película">
+                    <div class="modal-text">
+                        <h2 id="modal-title"></h2>
+                        <p id="modal-sinopsis"></p>
                     </div>
                 </div>
+                <div class="modal-buttons">
+                    <button id="request-button" class="button request-button" style="display: none;">Pedir esta película</button>
+                    <button id="watch-button" class="button">Ver ahora</button>
+                </div>
+                <div class="social-buttons">
+                    <button id="favorite-button"><i class="fas fa-heart"></i> Añadir a Favoritos</button>
+                    <button id="share-button"><i class="fas fa-share-alt"></i> Compartir</button>
+                </div>
             </div>
+            <section class="related-section">
+                <h3>Relacionadas</h3>
+                <div id="related-movies" class="movie-list horizontal-scroll"></div>
+            </section>
         </div>
     </div>
 
+    <!-- Modal para reproductor de video -->
     <div id="video-modal" class="modal">
         <div class="modal-content video-content">
             <span class="close-button">&times;</span>
@@ -117,6 +126,7 @@
         </div>
     </div>
 
+    <!-- Modal para mensaje de premium -->
     <div id="premium-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -126,6 +136,7 @@
         </div>
     </div>
 
+    <!-- Modal para ver más películas en cuadrícula -->
     <div id="see-more-modal" class="modal">
         <div class="modal-content full-grid">
             <span class="close-button">&times;</span>
@@ -133,7 +144,19 @@
             <div id="see-more-grid" class="movie-grid"></div>
         </div>
     </div>
+
+    <!-- Modal para la lista de géneros -->
+    <div id="genres-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Géneros</h2>
+            <div id="genres-list" class="movie-grid"></div>
+        </div>
+    </div>
     
+    <div class="footer-text">© Sala Cine. Todos los derechos reservados.</div>
+
+    <!-- Scripts de Firebase y Telegram -->
     <script type="module" src="script.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </body>
