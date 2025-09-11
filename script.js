@@ -18,10 +18,11 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // --- Elementos del DOM ---
-const heroBanner = document.querySelector('.hero-banner');
+const heroBannerCarousel = document.querySelector('.hero-banner-carousel');
 const searchIconTop = document.getElementById('search-icon');
 const searchInput = document.getElementById('search-input');
-const movieCatalog = document.getElementById('movie-catalog');
+const homeScreen = document.getElementById('home-screen');
+const movieCatalog = document.getElementById('carousels-container');
 const searchResultsSection = document.getElementById('search-results-section');
 const searchResultsList = document.getElementById('search-results-list');
 const movieModal = document.getElementById('movie-modal');
@@ -36,18 +37,19 @@ const seeMoreModal = document.getElementById('see-more-modal');
 const seeMoreTitle = document.getElementById('see-more-title');
 const seeMoreGrid = document.getElementById('see-more-grid');
 const allMoviesGrid = document.getElementById('all-movies-grid');
-const allMoviesScreen = document.getElementById('movies-screen');
-const homeScreen = document.getElementById('home-screen');
+const allSeriesGrid = document.getElementById('all-series-grid');
+const moviesScreen = document.getElementById('movies-screen');
+const seriesScreen = document.getElementById('series-screen');
 const profileScreen = document.getElementById('profile-screen');
 const navItems = document.querySelectorAll('.bottom-nav .nav-item');
 const genresButton = document.getElementById('genres-button');
 const genresModal = document.getElementById('genres-modal');
 const genresList = document.getElementById('genres-list');
 const modalBackdrop = document.getElementById('modal-backdrop');
+const bannerList = document.getElementById('banner-list');
 
 let moviesData = [];
 let bannerMovies = [];
-let currentBannerIndex = 0;
 let allGenres = {};
 
 // --- Funciones para manejar Modales ---
@@ -90,6 +92,13 @@ function createMovieCard(movie) {
 
 function renderCarousel(containerId, movies) {
     const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    movies.forEach(movie => {
+        container.appendChild(createMovieCard(movie));
+    });
+}
+
+function renderGrid(container, movies) {
     container.innerHTML = '';
     movies.forEach(movie => {
         container.appendChild(createMovieCard(movie));
@@ -156,14 +165,6 @@ async function fetchFromTMDB(endpoint, query = '') {
     return data.results || data.items || [];
 }
 
-async function fetchGenres() {
-    const genres = await fetchFromTMDB('genre/movie/list');
-    genres.forEach(genre => {
-        allGenres[genre.id] = genre.name;
-    });
-    renderGenres();
-}
-
 async function fetchHomeMovies() {
     const popularMovies = await fetchFromTMDB('movie/popular');
     renderCarousel('populares-movies', popularMovies);
@@ -181,98 +182,89 @@ async function fetchHomeMovies() {
     renderCarousel('terror-movies', terrorMovies);
 
     bannerMovies = trendingMovies.filter(m => m.backdrop_path);
-    startBannerCarousel();
+    renderBannerCarousel();
+}
 
-    document.querySelectorAll('.see-more-btn').forEach(button => {
-        button.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const category = e.target.getAttribute('data-category');
-            const title = e.target.closest('.category-header').querySelector('h2').textContent;
-            
-            seeMoreTitle.textContent = title;
-            const movies = await fetchFromTMDB(category);
-            seeMoreGrid.innerHTML = '';
-            movies.forEach(movie => {
-                seeMoreGrid.appendChild(createMovieCard(movie));
-            });
-            showModal(seeMoreModal);
+function renderBannerCarousel() {
+    bannerList.innerHTML = '';
+    bannerMovies.forEach(movie => {
+        const bannerItem = document.createElement('div');
+        bannerItem.className = 'banner-item';
+        const backdropUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : 'https://placehold.co/1080x600?text=No+Banner';
+        bannerItem.style.backgroundImage = `url('${backdropUrl}')`;
+        bannerItem.innerHTML = `
+            <div class="banner-content">
+                <h2>${movie.title || movie.name}</h2>
+                <p>${movie.overview ? movie.overview.substring(0, 100) + '...' : ''}</p>
+            </div>
+        `;
+        bannerItem.addEventListener('click', () => showMovieDetails(movie));
+        bannerList.appendChild(bannerItem);
+    });
+}
+
+function renderAllMovies() {
+    fetchFromTMDB('discover/movie?sort_by=popularity.desc').then(movies => {
+        renderGrid(allMoviesGrid, movies);
+    });
+}
+
+function renderAllSeries() {
+    fetchFromTMDB('discover/tv?sort_by=popularity.desc').then(series => {
+        renderGrid(allSeriesGrid, series);
+    });
+}
+
+function renderGenres() {
+    fetchFromTMDB('genre/movie/list').then(genres => {
+        genresList.innerHTML = '';
+        genres.forEach(genre => {
+            const genreButton = document.createElement('button');
+            genreButton.className = 'button secondary';
+            genreButton.textContent = genre.name;
+            genreButton.onclick = () => {
+                fetchFromTMDB(`discover/movie?with_genres=${genre.id}`).then(movies => {
+                    renderGrid(allMoviesGrid, movies);
+                    document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+                    moviesScreen.classList.add('active');
+                    closeModal(genresModal);
+                });
+            };
+            genresList.appendChild(genreButton);
         });
     });
 }
 
-function startBannerCarousel() {
-    if (bannerMovies.length === 0) return;
-    
-    const bannerIndicatorContainer = document.querySelector('.banner-indicators');
-    bannerMovies.forEach(() => {
-        const indicator = document.createElement('div');
-        indicator.className = 'banner-indicator';
-        bannerIndicatorContainer.appendChild(indicator);
-    });
-
-    const updateBanner = (index) => {
-        const movie = bannerMovies[index];
-        const backdropUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : 'https://placehold.co/1080x600?text=No+Banner';
-        heroBanner.style.backgroundImage = `url('${backdropUrl}')`;
-        heroBanner.onclick = () => showMovieDetails(movie);
-        
-        const indicators = document.querySelectorAll('.banner-indicator');
-        indicators.forEach(ind => ind.classList.remove('active'));
-        indicators[index].classList.add('active');
-    };
-
-    updateBanner(currentBannerIndex);
-    
-    setInterval(() => {
-        currentBannerIndex = (currentBannerIndex + 1) % bannerMovies.length;
-        updateBanner(currentBannerIndex);
-    }, 5000);
-}
-
-function renderGenres() {
-    genresList.innerHTML = '';
-    for (const id in allGenres) {
-        const genreButton = document.createElement('button');
-        genreButton.className = 'button secondary';
-        genreButton.textContent = allGenres[id];
-        genreButton.onclick = async () => {
-            const movies = await fetchFromTMDB(`discover/movie?with_genres=${id}`);
-            seeMoreTitle.textContent = allGenres[id];
-            seeMoreGrid.innerHTML = '';
-            movies.forEach(movie => seeMoreGrid.appendChild(createMovieCard(movie)));
-            closeModal(genresModal);
-            showModal(seeMoreModal);
-        };
-        genresList.appendChild(genreButton);
-    }
-}
 
 // --- Search Logic ---
 searchIconTop.addEventListener('click', () => {
     searchInput.focus();
-});
-
-searchInput.addEventListener('input', async (e) => {
-    const query = e.target.value;
-    if (query.length > 2) {
-        movieCatalog.style.display = 'none';
-        searchResultsSection.style.display = 'block';
-        const searchResults = await fetchFromTMDB('search/multi', query);
-        if (searchResults.length > 0) {
-            searchResultsList.innerHTML = '';
-            searchResults.forEach(movie => {
-                if (movie.media_type !== 'person' && movie.poster_path) {
-                    searchResultsList.appendChild(createMovieCard(movie));
-                }
-            });
-        } else {
-            searchResultsList.innerHTML = '<p style="text-align: center; color: #999; margin-top: 20px;">No se encontraron resultados.</p>';
-        }
-    } else {
-        movieCatalog.style.display = 'block';
-        searchResultsSection.style.display = 'none';
+    if (searchInput.value.length > 2) {
+        handleSearch();
     }
 });
+
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        handleSearch();
+    }
+});
+
+searchInput.addEventListener('input', (e) => {
+    if (e.target.value.length > 2) {
+        handleSearch();
+    }
+});
+
+async function handleSearch() {
+    const query = searchInput.value;
+    if (query.length > 2) {
+        document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+        searchResultsSection.classList.add('active');
+        const searchResults = await fetchFromTMDB('search/multi', query);
+        renderGrid(searchResultsList, searchResults.filter(m => m.media_type !== 'person' && m.poster_path));
+    }
+}
 
 // --- Navegación ---
 navItems.forEach(item => {
@@ -284,6 +276,12 @@ navItems.forEach(item => {
         const targetScreenId = e.currentTarget.getAttribute('data-screen');
         document.getElementById(targetScreenId).classList.add('active');
         e.currentTarget.classList.add('active');
+
+        if (targetScreenId === 'movies-screen') {
+            renderAllMovies();
+        } else if (targetScreenId === 'series-screen') {
+            renderAllSeries();
+        }
     });
 });
 
