@@ -9,7 +9,6 @@ const firebaseConfig = JSON.parse(__firebase_config);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const userId = auth.currentUser?.uid || crypto.randomUUID();
 
 // --- Elementos del DOM ---
 const heroBanner = document.querySelector('.hero-banner');
@@ -28,7 +27,6 @@ const watchButton = document.getElementById('watch-button');
 const trailerButton = document.getElementById('trailer-button');
 
 let moviesData = [];
-let tmdbApiKey = '5eb8461b85d0d88c46d77cfe5436291f';
 
 // --- Funciones para manejar Modales ---
 function closeModal(modal) {
@@ -82,7 +80,6 @@ function showMovieDetails(movie) {
     document.getElementById('modal-title').textContent = movie.title || movie.name;
     document.getElementById('modal-description').textContent = movie.description || movie.overview;
     
-    // Check if movie is available in our database
     const localMovie = moviesData.find(m => m.tmdbId === movie.id);
 
     if (localMovie && localMovie.videoLink) {
@@ -120,7 +117,7 @@ function showMovieDetails(movie) {
 
 // --- TMDb & Firebase Data Fetching ---
 async function fetchFromTMDB(endpoint) {
-    const response = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=${tmdbApiKey}&language=es-ES`);
+    const response = await fetch(`https://api.themoviedb.org/3/${endpoint}?api_key=5eb8461b85d0d88c46d77cfe5436291f&language=es-ES`);
     if (!response.ok) {
         console.error('Error fetching from TMDb:', response.status);
         return [];
@@ -172,19 +169,16 @@ searchInput.addEventListener('input', async (e) => {
 
 // --- Bot Communication (Telegram) ---
 async function sendRequestToBot(movie) {
-  const response = await fetch('/api/request', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      movieTitle: movie.title || movie.name,
-      tmdbId: movie.id
-    })
-  });
-
-  const data = await response.json();
-  if (!data.success) {
-    console.error('Error al enviar la petición.');
-  }
+    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+        Telegram.WebApp.sendData(JSON.stringify({ 
+            type: 'movie_request', 
+            movie: {
+                title: movie.title || movie.name,
+                tmdbId: movie.id,
+                posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null
+            }
+        }));
+    }
 }
 
 // --- Initialization ---
