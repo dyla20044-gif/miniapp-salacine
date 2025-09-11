@@ -2,7 +2,11 @@ import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
   const { endpoint, query } = req.query;
-  const API_KEY = '5eb8461b85d0d88c46d77cfe5436291f'; // Tu API de TMDb
+  const API_KEY = process.env.TMDB_API_KEY;
+
+  if (!API_KEY) {
+    return res.status(500).json({ error: 'La clave de API de TMDb no está configurada.' });
+  }
 
   if (!endpoint) {
     return res.status(400).json({ error: 'Endpoint es requerido' });
@@ -10,7 +14,7 @@ export default async function handler(req, res) {
 
   const url = query 
     ? `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`
-    : `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES`;
+    : `https://api.themoviedb.org/3/search/${endpoint}?api_key=${API_KEY}&language=es-ES`;
 
   try {
     const response = await fetch(url);
