@@ -28,6 +28,9 @@ const navItems = document.querySelectorAll('.bottom-nav .nav-item');
 
 const searchInput = document.getElementById('search-input');
 const searchIconTop = document.getElementById('search-icon');
+const movieCatalog = document.getElementById('carousels-container');
+const searchResultsSection = document.getElementById('search-results-section');
+const searchResultsList = document.getElementById('search-results-list');
 
 const videoModal = document.getElementById('video-modal');
 const videoPlayer = document.getElementById('video-player');
@@ -64,9 +67,6 @@ function closeModal(modal) {
     if (modal.id === 'video-modal') {
         videoPlayer.pause();
         videoPlayer.currentTime = 0;
-    }
-    if (modal.id === 'genres-modal') {
-        // Nada especial aquí por ahora
     }
 }
 
@@ -140,7 +140,6 @@ function createBannerItem(movie) {
     return bannerItem;
 }
 
-
 function renderCarousel(containerId, movies, type = 'movie') {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
@@ -171,7 +170,6 @@ async function showDetailsScreen(movie, type = 'movie') {
     const genreNames = movie.genre_ids ? movie.genre_ids.map(id => allGenres[id]).filter(Boolean).join(', ') : '';
     detailsGenres.textContent = genreNames;
 
-    // Fetch credits for director and actors
     const creditsEndpoint = type === 'movie' ? `movie/${movie.id}/credits` : `tv/${movie.id}/credits`;
     const credits = await fetchFromTMDB(creditsEndpoint);
     
@@ -195,25 +193,6 @@ async function showDetailsScreen(movie, type = 'movie') {
     const relatedEndpoint = type === 'movie' ? `movie/${movie.id}/similar` : `tv/${movie.id}/similar`;
     const related = await fetchFromTMDB(relatedEndpoint);
     renderCarousel('related-movies', related, type);
-
-    // Sinopsis "Ver más"
-    if (detailsSinopsis.scrollHeight > detailsSinopsis.clientHeight) {
-        readMoreButton.style.display = 'inline';
-        detailsSinopsis.style.maxHeight = '90px'; // Initial collapsed height
-        detailsSinopsis.style.overflow = 'hidden';
-        readMoreButton.onclick = () => {
-            if (detailsSinopsis.style.maxHeight === '90px') {
-                detailsSinopsis.style.maxHeight = 'none';
-                readMoreButton.textContent = 'Ver menos';
-            } else {
-                detailsSinopsis.style.maxHeight = '90px';
-                readMoreButton.textContent = 'Ver más';
-            }
-        };
-    } else {
-        readMoreButton.style.display = 'none';
-        detailsSinopsis.style.maxHeight = 'none';
-    }
 }
 
 
@@ -243,14 +222,14 @@ async function fetchHomeContent() {
     renderCarousel('populares-movies', popularMovies, 'movie');
 
     const trendingContent = await fetchFromTMDB('trending/all/day');
-    renderCarousel('tendencias-movies', trendingContent, 'movie'); // TMDb trending can be movies or tv
+    renderCarousel('tendencias-movies', trendingContent, 'movie');
 
     const actionMovies = await fetchFromTMDB('discover/movie?with_genres=28');
     renderCarousel('accion-movies', actionMovies, 'movie');
 
     const terrorMovies = await fetchFromTMDB('discover/movie?with_genres=27,9648');
     renderCarousel('terror-movies', terrorMovies, 'movie');
-
+    
     const animacionMovies = await fetchFromTMDB('discover/movie?with_genres=16');
     renderCarousel('animacion-movies', animacionMovies, 'movie');
 
@@ -277,29 +256,28 @@ function renderBannerCarousel() {
 
 function startBannerAutoScroll() {
     let currentIndex = 0;
-    const scrollAmount = bannerList.clientWidth; // Width of one banner item
-
+    const scrollAmount = bannerList.clientWidth;
     clearInterval(bannerInterval);
     bannerInterval = setInterval(() => {
         if (currentIndex < bannerList.children.length - 1) {
             currentIndex++;
         } else {
-            currentIndex = 0; // Loop back to the start
+            currentIndex = 0;
         }
         bannerList.scrollTo({
             left: currentIndex * scrollAmount,
             behavior: 'smooth'
         });
-    }, 3000); // Change every 3 seconds
+    }, 3000);
 }
 
 function renderGenres(type = 'movie') {
     genresList.innerHTML = '';
-    const currentGenres = type === 'movie' ? allGenres : {}; // If you fetch separate genres for TV
-    for (const id in allGenres) { // Assuming allGenres contains both movie and TV for simplicity here
+    const currentGenres = allGenres;
+    for (const id in currentGenres) {
         const genreButton = document.createElement('button');
         genreButton.className = 'button secondary';
-        genreButton.textContent = allGenres[id];
+        genreButton.textContent = currentGenres[id];
         genreButton.onclick = () => {
             fetchFromTMDB(`discover/${type}?with_genres=${id}`).then(items => {
                 renderGrid(type === 'movie' ? allMoviesGrid : allSeriesGrid, items, type);
@@ -314,40 +292,35 @@ function renderGenres(type = 'movie') {
 }
 
 // --- Search Logic ---
-searchIconTop.addEventListener('click', () => {
-    // Optionally trigger search on icon click
+document.getElementById('search-icon').addEventListener('click', () => {
     const query = searchInput.value;
     if (query.length > 2) {
         handleSearch(query);
     }
 });
 
+searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        handleSearch(searchInput.value);
+    }
+});
+
 searchInput.addEventListener('input', (e) => {
     const query = e.target.value;
-    if (query.length > 2) {
-        handleSearch(query);
-    } else if (query.length === 0) {
-        // When search input is cleared, go back to home screen
+    if (query.length === 0) {
         document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
         homeScreen.classList.add('active');
-        // Clear previous search results if any
-        if (document.getElementById('search-results-list')) {
-            document.getElementById('search-results-list').innerHTML = '';
-        }
     }
 });
 
 async function handleSearch(query) {
     if (query.length > 2) {
-        // For search results, we'll display them in the movies grid for simplicity
-        document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
-        moviesScreen.classList.add('active'); // Show results in movies screen
-        
         const searchResults = await fetchFromTMDB('search/multi', query);
         renderGrid(allMoviesGrid, searchResults.filter(m => m.media_type !== 'person' && m.poster_path));
+        document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+        moviesScreen.classList.add('active');
     }
 }
-
 
 // --- Navegación ---
 navItems.forEach(item => {
@@ -362,12 +335,11 @@ navItems.forEach(item => {
 
         if (targetScreenId === 'movies-screen') {
             renderAllMovies();
-            fetchAllGenres('movie'); // Fetch movie genres
+            fetchAllGenres('movie');
         } else if (targetScreenId === 'series-screen') {
             renderAllSeries();
-            fetchAllGenres('tv'); // Fetch TV series genres
+            fetchAllGenres('tv');
         } else if (targetScreenId === 'home-screen') {
-            // Ensure home content is refreshed or loaded
             fetchHomeContent();
         }
     });
@@ -375,12 +347,6 @@ navItems.forEach(item => {
 
 genresButton.addEventListener('click', () => {
     showModal(genresModal);
-    fetchAllGenres('movie'); // Load movie genres
-});
-
-seriesGenresButton.addEventListener('click', () => {
-    showModal(genresModal);
-    fetchAllGenres('tv'); // Load TV genres
 });
 
 async function renderAllMovies() {
@@ -391,6 +357,20 @@ async function renderAllMovies() {
 async function renderAllSeries() {
     const series = await fetchFromTMDB('discover/tv?sort_by=popularity.desc');
     renderGrid(allSeriesGrid, series, 'tv');
+}
+
+// --- Bot Communication (Telegram) ---
+async function sendRequestToBot(movie) {
+    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+        Telegram.WebApp.sendData(JSON.stringify({ 
+            type: 'movie_request', 
+            movie: {
+                title: movie.title || movie.name,
+                tmdbId: movie.id,
+                posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null
+            }
+        }));
+    }
 }
 
 // --- Initialization ---
@@ -406,5 +386,5 @@ onAuthStateChanged(auth, async (user) => {
         }));
     });
     fetchHomeContent();
-    fetchAllGenres('movie'); // Initial load of movie genres
+    fetchAllGenres('movie');
 });
