@@ -1,6 +1,15 @@
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
+  // Soluciona el problema de CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   const { endpoint, query } = req.query;
   const API_KEY = process.env.TMDB_API_KEY;
 
@@ -12,11 +21,11 @@ export default async function handler(req, res) {
   if (!endpoint) {
     return res.status(400).json({ error: 'Endpoint es requerido.' });
   }
-  
+
   const url = query
     ? `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`
     : `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES`;
-  
+
   try {
     const response = await fetch(url);
     if (!response.ok) {
