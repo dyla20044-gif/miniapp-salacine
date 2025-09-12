@@ -489,3 +489,4 @@ onAuthStateChanged(auth, async (user) => {
     await fetchAllGenres('tv');
     fetchHomeContent();
 });
+
