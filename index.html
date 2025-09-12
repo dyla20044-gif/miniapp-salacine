@@ -140,4 +140,45 @@
                 <button id="read-more-button" class="text-button">Ver más</button>
                 <div id="movie-cast-info" class="movie-cast">
                     <p>Director: <span id="director-name"></span></p>
-                    <p
+                    <p>Actores: <span id="actors-list"></span></p>
+                </div>
+                <section class="related-section">
+                    <h3>También podría gustarte</h3>
+                    <div id="related-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item" data-screen="home-screen">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="#" class="nav-item" data-screen="movies-screen">
+            <i class="fas fa-film"></i>
+            <span>Películas</span>
+        </a>
+        <a href="#" class="nav-item" data-screen="series-screen">
+            <i class="fas fa-tv"></i>
+            <span>Series</span>
+        </a>
+        <a href="#" class="nav-item" data-screen="profile-screen">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+    </nav>
+
+    <div id="video-modal" class="modal">
+        <div class="modal-content video-content">
+            <span class="close-button">&times;</span>
+            <video id="video-player" controls></video>
+        </div>
+    </div>
+    
+    <div class="footer-text">© Sala Cine. Todos los derechos reservados.</div>
+
+    <script type="module" src="script.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</body>
+</html>
