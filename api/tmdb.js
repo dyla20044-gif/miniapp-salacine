@@ -5,7 +5,6 @@ export default async function handler(req, res) {
   const API_KEY = process.env.TMDB_API_KEY; // Leer la clave de forma segura
 
   if (!API_KEY) {
-    // Esto enviará un mensaje de error si la clave no está configurada
     console.error('TMDB_API_KEY no está configurada.');
     return res.status(500).json({ error: 'TMDB_API_KEY no está configurada.' });
   }
@@ -14,14 +13,21 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Endpoint es requerido.' });
   }
 
-  const url = query
+  // APLICO LA CORRECCIÓN AQUÍ
+  const isSearchEndpoint = endpoint.startsWith('search/');
+  const url = isSearchEndpoint
     ? `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`
     : `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES`;
+  
+  // CORRECCIÓN PARA ENDPOINTS 'DISCOVER' Y SIMILARES
+  // Aquí se asegura de que los parámetros adicionales (como 'with_genres') se unan con '&'
+  const finalUrl = url.includes('?') ? url.replace('?', '&') : url;
+
+  console.log('Final API URL:', finalUrl); // Agregué esto para que puedas ver la URL final
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(finalUrl);
     if (!response.ok) {
-      // Si la API de TMDb falla, muestra el error en el log de Vercel
       console.error(`Error de la API de TMDb: ${response.status}`);
       throw new Error(`Error de la API de TMDb: ${response.status}`);
     }
