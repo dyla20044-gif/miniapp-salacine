@@ -46,6 +46,7 @@ const allMoviesGrid = document.getElementById('all-movies-grid');
 const allSeriesGrid = document.getElementById('all-series-grid');
 const bannerList = document.getElementById('banner-list');
 const loader = document.getElementById('loader');
+const seeMoreButtons = document.querySelectorAll('.see-more-btn');
 
 let moviesData = [];
 let bannerMovies = [];
@@ -210,12 +211,18 @@ async function showDetailsScreen(movie, type = 'movie') {
 async function fetchFromTMDB(endpoint, query = '') {
     const url = query ? `/api/tmdb?endpoint=${endpoint}&query=${encodeURIComponent(query)}` : `/api/tmdb?endpoint=${endpoint}`;
     
-    const response = await fetch(url);
-    if (!response.ok) {
-        throw new Error(`Error fetching from local server: ${response.status}`);
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            console.error(`Error de la API: ${response.status} - ${response.statusText}`);
+            throw new Error(`Error fetching from local server: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.results || data.items || data;
+    } catch (error) {
+        console.error("Error en la llamada a fetchFromTMDB:", error);
+        throw error;
     }
-    const data = await response.json();
-    return data.results || data.items || data;
 }
 
 async function fetchHomeContent() {
@@ -382,6 +389,34 @@ navItems.forEach(item => {
         }
     });
 });
+
+seeMoreButtons.forEach(button => {
+    button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const endpoint = e.currentTarget.getAttribute('data-endpoint');
+        const type = e.currentTarget.getAttribute('data-type');
+        
+        showLoader();
+        try {
+            const items = await fetchFromTMDB(endpoint);
+            if (type === 'movie') {
+                renderGrid(allMoviesGrid, items, 'movie');
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                moviesScreen.classList.add('active');
+            } else {
+                renderGrid(allSeriesGrid, items, 'tv');
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                seriesScreen.classList.add('active');
+            }
+        } catch (error) {
+            console.error("Error loading 'See more' content:", error);
+            alert('No se pudo cargar el contenido. Intenta de nuevo.');
+        } finally {
+            hideLoader();
+        }
+    });
+});
+
 
 genresButton.addEventListener('click', () => {
     renderGenresModal('movie');
