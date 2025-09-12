@@ -417,7 +417,6 @@ seeMoreButtons.forEach(button => {
     });
 });
 
-
 genresButton.addEventListener('click', () => {
     renderGenresModal('movie');
     showModal(genresModal);
