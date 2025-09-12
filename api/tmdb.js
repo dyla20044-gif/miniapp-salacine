@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     console.error('TMDB_API_KEY no está configurada.');
     return res.status(500).json({ error: 'TMDB_API_KEY no está configurada.' });
   }
-
+  
   if (!endpoint) {
     return res.status(400).json({ error: 'Endpoint es requerido.' });
   }
