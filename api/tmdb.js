@@ -12,20 +12,15 @@ export default async function handler(req, res) {
   if (!endpoint) {
     return res.status(400).json({ error: 'Endpoint es requerido.' });
   }
-
+  
   const url = query
     ? `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`
     : `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES`;
   
-  const finalUrl = url.includes('?') ? url.replace('?', '&') : url;
-
-  console.log('Final API URL:', finalUrl);
-
   try {
-    const response = await fetch(finalUrl);
+    const response = await fetch(url);
     if (!response.ok) {
-      console.error(`Error de la API de TMDb: ${response.status}`);
-      throw new Error(`Error de la API de TMDb: ${response.status}`);
+      throw new Error(`Error de la API: ${response.status}`);
     }
     const data = await response.json();
     res.status(200).json(data);
