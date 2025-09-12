@@ -140,6 +140,7 @@ function createBannerItem(movie) {
     return bannerItem;
 }
 
+
 function renderCarousel(containerId, movies, type = 'movie') {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
@@ -170,6 +171,7 @@ async function showDetailsScreen(movie, type = 'movie') {
     const genreNames = movie.genre_ids ? movie.genre_ids.map(id => allGenres[id]).filter(Boolean).join(', ') : '';
     detailsGenres.textContent = genreNames;
 
+    // Fetch credits for director and actors
     const creditsEndpoint = type === 'movie' ? `movie/${movie.id}/credits` : `tv/${movie.id}/credits`;
     const credits = await fetchFromTMDB(creditsEndpoint);
     
@@ -207,14 +209,6 @@ async function fetchFromTMDB(endpoint, query = '') {
     }
     const data = await response.json();
     return data.results || data.items || data;
-}
-
-async function fetchAllGenres(type = 'movie') {
-    const genres = await fetchFromTMDB(`genre/${type}/list`);
-    genres.forEach(genre => {
-        allGenres[genre.id] = genre.name;
-    });
-    renderGenres(type);
 }
 
 async function fetchHomeContent() {
@@ -259,7 +253,7 @@ function startBannerAutoScroll() {
     const scrollAmount = bannerList.clientWidth;
     clearInterval(bannerInterval);
     bannerInterval = setInterval(() => {
-        if (currentIndex < bannerList.children.length - 1) {
+        if (currentIndex < bannerMovies.length - 1) {
             currentIndex++;
         } else {
             currentIndex = 0;
@@ -292,7 +286,7 @@ function renderGenres(type = 'movie') {
 }
 
 // --- Search Logic ---
-document.getElementById('search-icon').addEventListener('click', () => {
+searchIconTop.addEventListener('click', () => {
     const query = searchInput.value;
     if (query.length > 2) {
         handleSearch(query);
@@ -307,7 +301,9 @@ searchInput.addEventListener('keydown', (e) => {
 
 searchInput.addEventListener('input', (e) => {
     const query = e.target.value;
-    if (query.length === 0) {
+    if (query.length > 2) {
+        handleSearch(query);
+    } else if (query.length === 0) {
         document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
         homeScreen.classList.add('active');
     }
@@ -357,20 +353,6 @@ async function renderAllMovies() {
 async function renderAllSeries() {
     const series = await fetchFromTMDB('discover/tv?sort_by=popularity.desc');
     renderGrid(allSeriesGrid, series, 'tv');
-}
-
-// --- Bot Communication (Telegram) ---
-async function sendRequestToBot(movie) {
-    if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-        Telegram.WebApp.sendData(JSON.stringify({ 
-            type: 'movie_request', 
-            movie: {
-                title: movie.title || movie.name,
-                tmdbId: movie.id,
-                posterUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null
-            }
-        }));
-    }
 }
 
 // --- Initialization ---
