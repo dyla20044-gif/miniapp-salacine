@@ -13,17 +13,17 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Endpoint es requerido.' });
   }
 
-  // APLICO LA CORRECCIÓN AQUÍ
-  const isSearchEndpoint = endpoint.startsWith('search/');
-  const url = isSearchEndpoint
+  // Se corrige la construcción de la URL para que no haya un doble signo de interrogación
+  // Se usa el signo & para los parámetros adicionales.
+  const url = query
     ? `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`
     : `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES`;
   
-  // CORRECCIÓN PARA ENDPOINTS 'DISCOVER' Y SIMILARES
-  // Aquí se asegura de que los parámetros adicionales (como 'with_genres') se unan con '&'
+  // CORRECCIÓN CLAVE: Esto asegura que el endpoint del cliente se una correctamente
+  // a la URL de TMDb sin causar un error de sintaxis.
   const finalUrl = url.includes('?') ? url.replace('?', '&') : url;
 
-  console.log('Final API URL:', finalUrl); // Agregué esto para que puedas ver la URL final
+  console.log('Final API URL:', finalUrl); // Muestra la URL final para depuración
 
   try {
     const response = await fetch(finalUrl);
