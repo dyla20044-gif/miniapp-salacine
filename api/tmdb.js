@@ -22,9 +22,19 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Endpoint es requerido.' });
   }
 
+  let finalEndpoint = endpoint;
+  let finalQuery = '';
+
+  // Esta lógica corrige el error en las llamadas "discover"
+  if (endpoint.includes('?')) {
+    const parts = endpoint.split('?');
+    finalEndpoint = parts[0];
+    finalQuery = parts[1];
+  }
+  
   const url = query
-    ? `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}`
-    : `https://api.themoviedb.org/3/${endpoint}?api_key=${API_KEY}&language=es-ES`;
+    ? `https://api.themoviedb.org/3/${finalEndpoint}?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}&${finalQuery}`
+    : `https://api.themoviedb.org/3/${finalEndpoint}?api_key=${API_KEY}&language=es-ES&${finalQuery}`;
 
   try {
     const response = await fetch(url);
