@@ -1,55 +1,6 @@
 import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  // --- ESTO ES LA SOLUCIÓN AL ERROR DE CORS ---
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  // --- FIN DE LA SOLUCIÓN ---
-
-  const { endpoint, query } = req.query;
-  const API_KEY = process.env.TMDB_API_KEY;
-
-  if (!API_KEY) {
-    console.error('TMDB_API_KEY no está configurada.');
-    return res.status(500).json({ error: 'TMDB_API_KEY no está configurada.' });
-  }
-
-  if (!endpoint) {
-    return res.status(400).json({ error: 'Endpoint es requerido.' });
-  }
-
-  let finalEndpoint = endpoint;
-  let finalQuery = '';
-
-  if (endpoint.includes('?')) {
-    const parts = endpoint.split('?');
-    finalEndpoint = parts[0];
-    finalQuery = parts[1];
-  }
-  
-  const url = query
-    ? `https://api.themoviedb.org/3/${finalEndpoint}?api_key=${API_KEY}&language=es-ES&query=${encodeURIComponent(query)}&${finalQuery}`
-    : `https://api.themoviedb.org/3/${finalEndpoint}?api_key=${API_KEY}&language=es-ES&${finalQuery}`;
-
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Error de la API: ${response.status}`);
-    }
-    const data = await response.json();
-    res.status(200).json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}
-import fetch from 'node-fetch';
-
-export default async function handler(req, res) {
   // Soluciona el problema de CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -74,6 +25,7 @@ export default async function handler(req, res) {
   let finalEndpoint = endpoint;
   let finalQuery = '';
 
+  // Esta lógica corrige el error en las llamadas "discover"
   if (endpoint.includes('?')) {
     const parts = endpoint.split('?');
     finalEndpoint = parts[0];
