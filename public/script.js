@@ -208,12 +208,11 @@ async function showDetailsScreen(movie, type = 'movie') {
 }
 
 // --- TMDb & Firebase Data Fetching ---
-// Código corregido para llamar al servidor en Vercel
 async function fetchFromTMDB(endpoint, query = '') {
     const vercelUrl = 'https://miniapp-salacine-dylans-projects-0b131228.vercel.app';
     const url = query
-        ? `${vercelUrl}/api/tmdb?endpoint=${endpoint}&query=${encodeURIComponent(query)}`
-        : `${vercelUrl}/api/tmdb?endpoint=${endpoint}`;
+      ? `${vercelUrl}/api/tmdb?endpoint=${endpoint}&query=${encodeURIComponent(query)}`
+      : `${vercelUrl}/api/tmdb?endpoint=${endpoint}`;
     
     try {
         const response = await fetch(url);
