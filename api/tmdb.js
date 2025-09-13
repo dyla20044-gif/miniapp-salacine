@@ -25,7 +25,6 @@ export default async function handler(req, res) {
   let finalEndpoint = endpoint;
   let finalQuery = '';
 
-  // Esta lógica corrige el error en las llamadas "discover"
   if (endpoint.includes('?')) {
     const parts = endpoint.split('?');
     finalEndpoint = parts[0];
