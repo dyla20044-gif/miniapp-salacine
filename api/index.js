@@ -16,4 +16,8 @@ app.get('/', (req, res) => {
 
 app.listen(port, () => {
     console.log(`Servidor de bot escuchando en el puerto ${port}`);
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 6332ac9a037090e96a54681fb8d9b8ff747a0229

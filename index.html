@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍿 Sala Cine</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <header class="top-nav">
+        <div class="logo">🍿 Sala Cine</div>
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="Buscar películas...">
+            <i id="search-icon" class="fas fa-search search-icon-top"></i>
+        </div>
+    </header>
+
+    <main>
+        <div id="home-screen" class="screen active">
+            <section class="hero-banner-carousel">
+                <div id="banner-list" class="movie-list horizontal-scroll"></div>
+            </section>
+
+            <div id="carousels-container">
+                <section class="category-section">
+                    <div class="category-header">
+                        <h2>Populares</h2>
+                        <a href="#" class="see-more-btn" data-endpoint="movie/popular" data-type="movie">Ver más</a>
+                    </div>
+                    <div id="populares-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+                
+                <section class="category-section">
+                    <div class="category-header">
+                        <h2>Tendencias</h2>
+                        <a href="#" class="see-more-btn" data-endpoint="trending/all/day" data-type="movie">Ver más</a>
+                    </div>
+                    <div id="tendencias-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+
+                 <section class="category-section">
+                    <div class="category-header">
+                        <h2>Acción y Aventura</h2>
+                        <a href="#" class="see-more-btn" data-endpoint="discover/movie?with_genres=28" data-type="movie">Ver más</a>
+                    </div>
+                    <div id="accion-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+                
+                <section class="category-section">
+                    <div class="category-header">
+                        <h2>Terror y Misterio</h2>
+                        <a href="#" class="see-more-btn" data-endpoint="discover/movie?with_genres=27,9648" data-type="movie">Ver más</a>
+                    </div>
+                    <div id="terror-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+
+                <section class="category-section">
+                    <div class="category-header">
+                        <h2>Animación</h2>
+                        <a href="#" class="see-more-btn" data-endpoint="discover/movie?with_genres=16" data-type="movie">Ver más</a>
+                    </div>
+                    <div id="animacion-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+
+                <section class="category-section">
+                    <div class="category-header">
+                        <h2>Documentales</h2>
+                        <a href="#" class="see-more-btn" data-endpoint="discover/movie?with_genres=99" data-type="movie">Ver más</a>
+                    </div>
+                    <div id="documentales-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+
+                <section class="category-section">
+                    <div class="category-header">
+                        <h2>Ciencia Ficción</h2>
+                        <a href="#" class="see-more-btn" data-endpoint="discover/movie?with_genres=878" data-type="movie">Ver más</a>
+                    </div>
+                    <div id="scifi-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+
+                <section class="category-section">
+                    <div class="category-header">
+                        <h2>Series Populares</h2>
+                        <a href="#" class="see-more-btn" data-endpoint="tv/popular" data-type="tv">Ver más</a>
+                    </div>
+                    <div id="populares-series" class="movie-list horizontal-scroll"></div>
+                </section>
+            </div>
+        </div>
+
+        <div id="movies-screen" class="screen">
+            <div class="screen-header">
+                <h2>Películas</h2>
+                <button id="genres-button" class="icon-button"><i class="fas fa-ellipsis-v"></i></button>
+            </div>
+            <div id="all-movies-grid" class="movie-grid"></div>
+        </div>
+
+        <div id="series-screen" class="screen">
+            <div class="screen-header">
+                <h2>Series de TV</h2>
+                <button id="series-genres-button" class="icon-button"><i class="fas fa-ellipsis-v"></i></button>
+            </div>
+            <div id="all-series-grid" class="movie-grid"></div>
+        </div>
+
+        <div id="profile-screen" class="screen">
+            <div class="screen-header">
+                <h2>Mi Perfil</h2>
+            </div>
+            <div class="profile-options">
+                <button class="button">Activar Cuenta Pro</button>
+                <button class="button secondary">Iniciar Sesión</button>
+                <button class="button secondary">Mis Favoritos</button>
+                <button class="button secondary">Configuración</button>
+            </div>
+        </div>
+
+        <div id="details-screen" class="screen">
+            <div id="details-poster-top">
+                <div class="poster-overlay">
+                    <button id="details-play-button" class="play-button"><i class="fas fa-play"></i></button>
+                </div>
+            </div>
+            <div class="details-info-section">
+                <div class="movie-header">
+                    <h2 id="details-title"></h2>
+                    <div class="movie-actions">
+                        <i id="share-button" class="fas fa-share-alt"></i>
+                        <i id="favorite-button" class="fas fa-heart"></i>
+                    </div>
+                </div>
+                <div class="movie-metadata">
+                    <span id="details-year"></span>
+                    <span id="details-genres"></span>
+                </div>
+                <p id="details-sinopsis"></p>
+                <button id="read-more-button" class="text-button">Ver más</button>
+                <div id="movie-cast-info" class="movie-cast">
+                    <p>Director: <span id="director-name"></span></p>
+                    <p>Actores: <span id="actors-list"></span></p>
+                </div>
+                <section class="related-section">
+                    <h3>También podría gustarte</h3>
+                    <div id="related-movies" class="movie-list horizontal-scroll"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item" data-screen="home-screen">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+        </a>
+        <a href="#" class="nav-item" data-screen="movies-screen">
+            <i class="fas fa-film"></i>
+            <span>Películas</span>
+        </a>
+        <a href="#" class="nav-item" data-screen="series-screen">
+            <i class="fas fa-tv"></i>
+            <span>Series</span>
+        </a>
+        <a href="#" class="nav-item" data-screen="profile-screen">
+            <i class="fas fa-user"></i>
+            <span>Perfil</span>
+        </a>
+    </nav>
+
+    <div id="video-modal" class="modal">
+        <div class="modal-content video-content">
+            <span class="close-button">&times;</span>
+            <video id="video-player" controls></video>
+        </div>
+    </div>
+    
+    <div class="footer-text">© Sala Cine. Todos los derechos reservados.</div>
+
+    <script type="module" src="script.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</body>
+</html>
