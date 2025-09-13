@@ -14,7 +14,6 @@ export default async function handler(req, res) {
   const API_KEY = process.env.TMDB_API_KEY;
 
   if (!API_KEY) {
-    console.error('TMDB_API_KEY no está configurada.');
     return res.status(500).json({ error: 'TMDB_API_KEY no está configurada.' });
   }
 
